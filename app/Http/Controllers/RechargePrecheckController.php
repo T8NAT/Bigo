@@ -10,16 +10,19 @@ use Illuminate\Support\Facades\Validator;
 
 class RechargePrecheckController extends Controller
 {
-    private mixed $client_id;
-    private mixed $secret_key;
-    private mixed $host_domain;
-   public function __construct()
+    public mixed $client_id;
+    public mixed $secret_key;
+    public mixed $host_domain;
+    public SignatureService $signatureService;
+   public function __construct(SignatureService $signatureService)
    {
        $this->client_id=config('bigo.client_id');
 
       $this->secret_key =config('bigo.secret');
 
       $this->host_domain = config('bigo.host_domain');
+
+      $this->signatureService=$signatureService;
    }
 
     public function precheck(Request $request)
@@ -33,11 +36,12 @@ class RechargePrecheckController extends Controller
             'seqid' => uniqid(),
         ];
         try {
-        $signature = SignatureService::generateSignature($params, $this->secret_key);
+        $signature = $this->signatureService->generateSignature('/sign/agent/recharge_pre_check',json_encode($params), now()->timestamp, $this->secret_key);
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'bigo-oauth-signature' => $signature,
                 'bigo-client-id' => $this->client_id,
+                'client_version'=>1,
                 'bigo-timestamp' => now()->timestamp,
             ])->post("{$this->host_domain}/sign/agent/recharge_pre_check", $params);
             //success request
@@ -55,7 +59,6 @@ class RechargePrecheckController extends Controller
                     'message' => $response->json(),
                 ], $response->status());
             }
-
 
             //exception error
         } catch (\Exception $e) {
