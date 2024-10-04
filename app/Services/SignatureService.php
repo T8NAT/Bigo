@@ -28,4 +28,14 @@ class SignatureService
 
         return base64_encode($signature);
     }
+
+
+
+    function generateGatewaySignature($merchantPublicKey, $orderAmount, $orderCurrency, $orderMerchantReferenceId, $apiPassword, $timestamp)
+    {
+        $amountStr = number_format($orderAmount, 2, '.', '');
+        $data = "{$merchantPublicKey}{$amountStr}{$orderCurrency}{$orderMerchantReferenceId}{$timestamp}";
+        $hash = hash_hmac('sha256', $data, $apiPassword, true);
+        return base64_encode($hash);
+    }
 }

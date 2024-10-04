@@ -37,29 +37,30 @@ class RechargePrecheckController extends Controller
         ];
         try {
         $signature = $this->signatureService->generateSignature('/sign/agent/recharge_pre_check',json_encode($params), now()->timestamp, $this->secret_key);
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-                'bigo-oauth-signature' => $signature,
-                'bigo-client-id' => $this->client_id,
-                'client_version'=>1,
-                'bigo-timestamp' => now()->timestamp,
-            ])->post("{$this->host_domain}/sign/agent/recharge_pre_check", $params);
-            //success request
-            if ($response->successful()) {
-                return response()->json([
-                    'success'=>true,
-                    'status' => $response->status(),
-                    'data' => $response->json(),
-                ],$response->status());
-                //failed request
-            } else {
-                return response()->json([
-                    'success'=>false,
-                    'status' => $response->status(),
-                    'message' => $response->json(),
-                ], $response->status());
-            }
+//            $response = Http::withHeaders([
+//                'Content-Type' => 'application/json',
+//                'bigo-oauth-signature' => $signature,
+//                'bigo-client-id' => $this->client_id,
+//                'client_version'=>1,
+//                'bigo-timestamp' => now()->timestamp,
+//            ])->post("{$this->host_domain}/sign/agent/recharge_pre_check", $params);
+//            //success request
+//            if ($response->successful()) {
+//                return response()->json([
+//                    'success'=>true,
+//                    'status' => $response->status(),
+//                    'data' => $response->json(),
+//                ],$response->status());
+//                //failed request
+//            } else {
+//                return response()->json([
+//                    'success'=>false,
+//                    'status' => $response->status(),
+//                    'message' => $response->json(),
+//                ], $response->status());
+//            }
 
+            return $signature;
             //exception error
         } catch (\Exception $e) {
             return response()->json([
