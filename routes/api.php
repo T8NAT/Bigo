@@ -37,6 +37,6 @@ Route::controller(GeideaGatewayController::class)->group(function(){
 
     Route::post('/payment/create-session','payOrder');
 
-    Route::post('/payment/success','subscribePayment');
+    Route::post('/payment/initiate-auth','initiateAuthentication');
 
 });

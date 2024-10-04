@@ -40,27 +40,28 @@ class GeideaGatewayController extends Controller
     }
 
 
-    public function subscribePayment()
+    /**
+     * @throws \Exception
+     */
+    public function initiateAuthentication(Request $request)
     {
-//     $data=[
-//         'amount'=>1850,
-//         'currency'=>'SAR',
-//         'timestamp'=>date('Y/m/d H:i:s'),
-//         'merchantReferenceId'=>'6700051424c01',
-//         "paymentOperation"=>"Pay",
-//     ];
-//
-//     return $this->gatewayService->getPaymentStatus($data);
+        $request->validate([
+            'amount' =>'required|numeric',
+            'currency'=>'required|in:SAR,EGP,AED,QAR,OMR,BHD,KWD,USD,GBP,EUR',
+            'sessionId'=>'required',
+            'cardNumber'=>'required',
+        ]);
+         $data=[
+         'amount'=>$request->input('amount'),
+         'currency'=>$request->input('currency'),
+         'timestamp'=>date('Y/m/d H:i:s'),
+         "paymentOperation"=>"Pay",
+         'sessionId'=>$request->input('sessionId'),
+         'cardNumber'=>$request->input('cardNumber'),
+     ];
 
-//        "paymentMethod"=> [
-//        "cardNumber"=> 5123450000000008,
-//        "cardholderName"=>'Mastercar',
-//        "cvv"=> 100,
-//        "expiryDate"=>[
-//            "month"=>01,
-//            "year"=> 39,
-//        ],
-  //  ]
+         return $this->gatewayService->sendRequest($data);
+
     }
 
 }
