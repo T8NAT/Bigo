@@ -4,6 +4,7 @@ namespace App\Services;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class GatewayService
@@ -38,14 +39,9 @@ class GatewayService
     protected function buildRequest($method, $url, $data): string
     {
         try {
-            $data['signature']= $this->getSignature($data);
-            $data[ 'callbackUrl']=config('gateway.callback_url');
-            $data[ 'ReturnUrl']=config('gateway.return_url');
-
             $response=Http::withHeaders(
                 $this->header
             )->post($this->base_url.$url,$data);
-
             if($response->successful()) {
                 return response()->json([
                    'success'=>true,
@@ -59,7 +55,7 @@ class GatewayService
                 'data' => $response->json(),
             ],$response->status());
 
-        } catch (\Exception $e) {
+        }catch (\Exception $e) {
             return response()->json([
                 'success'=>false,
                 'status' => 'error',
@@ -71,9 +67,34 @@ class GatewayService
     /**
      * @throws \Exception
      */
-    public function sendRequest($data): string
+    public function sendRequest(Request $request)
     {
-       return $this->buildRequest('POST','payment-intent/api/v2/direct/session',$data);
+        $request->validate([
+            'amount' =>'required|numeric',
+            'currency'=>'required|in:SAR,EGP,AED,QAR,OMR,BHD,KWD,USD,GBP,EUR',
+            'cardNumber'=>'required',
+        ]);
+        $data=[
+            'amount'=>$request->input('amount'),
+            'currency'=>$request->input('currency'),
+            'timestamp'=>date('Y/m/d H:i:s'),
+            'merchantReferenceId'=>uniqid(),
+            "paymentOperation"=>"Pay",
+        ];
+        $checkout_response=$this->buildRequest('POST','payment-intent/api/v2/direct/session',$data);
+
+        if($checkout_response['success']){
+
+            return  $checkout_response;
+        }
+
+        $data['signature']= $this->getSignature($data);
+        $data['cardNumber']=$request->input('cardNumber');
+        $data[ 'callbackUrl']=config('gateway.callback_url');
+        $data[ 'ReturnUrl']=config('gateway.return_url');
+
+
+       return  $data;
     }
 
 
