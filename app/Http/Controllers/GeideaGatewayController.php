@@ -5,14 +5,12 @@ namespace App\Http\Controllers;
 use App\Services\GatewayService;
 use App\Services\SignatureService;
 use Illuminate\Http\Request;
-use PhpParser\Node\Expr\Array_;
 
 class GeideaGatewayController extends Controller
 {
     public GatewayService $gatewayService;
    public SignatureService $signatureService;
     //
-    public array $data;
     public function __construct(
         GatewayService $gatewayService,
         SignatureService $signatureService,
@@ -25,16 +23,44 @@ class GeideaGatewayController extends Controller
     /**
      * @throws \Exception
      */
-    public function payOrder()
-    { $this->data=[
-        'amount'=>'1000',
-        'currency'=>'SAR',
-        'timestamp'=>now()->timestamp,
+    public function payOrder(Request $request): string
+    {
+       $request->validate([
+           'amount' =>'required|numeric',
+           'currency'=>'required|in:SAR,EGP,AED,QAR,OMR,BHD,KWD,USD,GBP,EUR',
+        ]);
+        $data=[
+        'amount'=>$request->input('amount'),
+        'currency'=>$request->input('currency'),
+        'timestamp'=>date('Y/m/d H:i:s'),
         'merchantReferenceId'=>uniqid(),
-        'callbackUrl'=>config('gateway.callback_url'),
-        'ReturnUrl'=>config('gateway.return_url'),
+        "paymentOperation"=>"Pay",
     ];
-       return $this->gatewayService->sendPayment($this->data);
+        return $this->gatewayService->sendRequest($data);
+    }
+
+
+    public function subscribePayment()
+    {
+//     $data=[
+//         'amount'=>1850,
+//         'currency'=>'SAR',
+//         'timestamp'=>date('Y/m/d H:i:s'),
+//         'merchantReferenceId'=>'6700051424c01',
+//         "paymentOperation"=>"Pay",
+//     ];
+//
+//     return $this->gatewayService->getPaymentStatus($data);
+
+//        "paymentMethod"=> [
+//        "cardNumber"=> 5123450000000008,
+//        "cardholderName"=>'Mastercar',
+//        "cvv"=> 100,
+//        "expiryDate"=>[
+//            "month"=>01,
+//            "year"=> 39,
+//        ],
+  //  ]
     }
 
 }

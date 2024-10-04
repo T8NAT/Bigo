@@ -35,6 +35,8 @@ Route::post('/recharge/disable', [DisableRechargeController::class, 'disable']);
 
 Route::controller(GeideaGatewayController::class)->group(function(){
 
-    Route::post('/payment','payOrder');
+    Route::post('/payment/create-session','payOrder');
+
+    Route::post('/payment/success','subscribePayment');
 
 });
