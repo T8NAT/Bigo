@@ -2,32 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PaymentRequest;
 use App\Services\GatewayService;
-use App\Services\SignatureService;
+
 use Illuminate\Http\Request;
 
 class GeideaGatewayController extends Controller
 {
     public GatewayService $gatewayService;
-   public SignatureService $signatureService;
-    //
-    public function __construct(
-        GatewayService $gatewayService,
-        SignatureService $signatureService,
-    )
+
+    public function __construct(  GatewayService $gatewayService)
     {
       $this->gatewayService=$gatewayService;
-      $this->signatureService=$signatureService;
     }
 
     /**
      * @throws \Exception
      */
-    public function payOrder(Request $request): string
+    public function payOrder(PaymentRequest $request)
     {
+        try {
+            return $this->gatewayService->sendRequest($request);
+        }catch (\Exception $exception){
+            return  $exception->getMessage();
+        }
 
-        return $this->gatewayService->sendRequest($request);
+    }
 
 
-}
+
+
 }
